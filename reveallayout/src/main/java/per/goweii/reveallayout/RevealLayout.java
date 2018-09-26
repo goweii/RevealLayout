@@ -1,6 +1,7 @@
 package per.goweii.reveallayout;
 
 import android.animation.Animator;
+import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -17,7 +18,7 @@ import android.widget.FrameLayout;
 
 /**
  * 揭示效果布局
- * 可以指定2个子布局，以水波纹揭示效果切换选中状态展示
+ * 可以指定2个子布局，以圆形揭示效果切换选中状态
  *
  * @author Cuizhen
  * @date 2018/9/25
@@ -40,6 +41,10 @@ public class RevealLayout extends FrameLayout {
     private float mRevealRadius = 0;
     private final Path mPath = new Path();
     private ValueAnimator mAnimator;
+    private TimeInterpolator mInterpolator = null;
+
+    private OnCheckedChangeListener mOnCheckedChangeListener = null;
+    private OnAnimStateChangeListener mOnAnimStateChangeListener = null;
 
     public RevealLayout(Context context) {
         this(context, null);
@@ -55,6 +60,111 @@ public class RevealLayout extends FrameLayout {
         initView();
     }
 
+    /**
+     * 设置选中状态改变的监听器
+     *
+     * @param onCheckedChangeListener OnCheckedChangeListener
+     */
+    public void setOnCheckedChangeListener(OnCheckedChangeListener onCheckedChangeListener) {
+        mOnCheckedChangeListener = onCheckedChangeListener;
+    }
+
+    /**
+     * 设置动画状态改变的监听器
+     *
+     * @param onAnimStateChangeListener OnAnimStateChangeListener
+     */
+    public void setOnAnimStateChangeListener(OnAnimStateChangeListener onAnimStateChangeListener) {
+        mOnAnimStateChangeListener = onAnimStateChangeListener;
+    }
+
+    /**
+     * 获取当前选中状态
+     *
+     * @return 是否选中
+     */
+    public boolean isChecked() {
+        return mChecked;
+    }
+
+    /**
+     * 设置选中状态，一般在初始化时调用
+     *
+     * @param checked 是否选中
+     */
+    public void setChecked(boolean checked) {
+        mChecked = checked;
+        if (mChecked) {
+            mCheckedView.bringToFront();
+        } else {
+            mUncheckedView.bringToFront();
+        }
+    }
+
+    /**
+     * 切换选中状态，带有动画效果
+     */
+    public void toggle() {
+        mChecked = !mChecked;
+        if (mOnCheckedChangeListener != null) {
+            mOnCheckedChangeListener.onCheckedChanged(this, mChecked);
+        }
+        if (mAnimator != null) {
+            mAnimator.reverse();
+            if (mOnAnimStateChangeListener != null) {
+                mOnAnimStateChangeListener.onReverse();
+            }
+        } else {
+            createRevealAnim();
+        }
+    }
+
+    public void setAllowRevert(boolean allowRevert) {
+        mAllowRevert = allowRevert;
+    }
+
+    public void setAnimDuration(long animDuration) {
+        mAnimDuration = animDuration;
+    }
+
+    public void setInterpolator(TimeInterpolator interpolator) {
+        mInterpolator = interpolator;
+    }
+
+    public void setCheckWithExpand(boolean checkWithExpand) {
+        mCheckWithExpand = checkWithExpand;
+    }
+
+    public void setUncheckWithExpand(boolean uncheckWithExpand) {
+        mUncheckWithExpand = uncheckWithExpand;
+    }
+
+    public void setCheckedView(View checkedView) {
+        mCheckedView = checkedView;
+        initView();
+    }
+
+    public void setUncheckedView(View uncheckedView) {
+        mUncheckedView = uncheckedView;
+        initView();
+    }
+
+    public void setCheckedLayoutId(int checkedLayoutId) {
+        mCheckedLayoutId = checkedLayoutId;
+        setCheckedView(createCheckedView());
+    }
+
+    public void setUncheckedLayoutId(int uncheckedLayoutId) {
+        mUncheckedLayoutId = uncheckedLayoutId;
+        setUncheckedView(createUncheckedView());
+    }
+
+    /**
+     * 获取布局文件携带的属性，子类复写该方法，获取子类定义的属性。
+     * 获取到子类属性后可以在{@link #createCheckedView()}和{@link #createUncheckedView()}中使用
+     *
+     * @param attrs AttributeSet
+     */
     protected void initAttr(AttributeSet attrs) {
         TypedArray array = getContext().obtainStyledAttributes(attrs, R.styleable.RevealLayout);
         mCheckedLayoutId = array.getResourceId(R.styleable.RevealLayout_rl_checked_layout, 0);
@@ -67,14 +177,11 @@ public class RevealLayout extends FrameLayout {
         array.recycle();
     }
 
-    private void initView() {
-        mCheckedView = createCheckedView();
-        mUncheckedView = createUncheckedView();
-        addView(mCheckedView, getDefaultLayoutParams());
-        addView(mUncheckedView, getDefaultLayoutParams());
-        setChecked(mChecked);
-    }
-
+    /**
+     * 创建选中状态的控件，子类可复写该方法，初始化自己的控件
+     *
+     * @return 选中状态的控件
+     */
     protected View createCheckedView() {
         View checkedView;
         if (mCheckedLayoutId > 0) {
@@ -85,6 +192,11 @@ public class RevealLayout extends FrameLayout {
         return checkedView;
     }
 
+    /**
+     * 创建非选中状态的控件，子类可复写该方法，初始化自己的控件
+     *
+     * @return 非选中状态的控件
+     */
     protected View createUncheckedView() {
         View uncheckedView;
         if (mUncheckedLayoutId > 0) {
@@ -93,6 +205,22 @@ public class RevealLayout extends FrameLayout {
             uncheckedView = new View(getContext());
         }
         return uncheckedView;
+    }
+
+    /**
+     * 初始化选中和未选中状态的控件，并设置默认状态
+     */
+    private void initView() {
+        removeAllViews();
+        if (mCheckedView == null) {
+            mCheckedView = createCheckedView();
+        }
+        if (mUncheckedView == null) {
+            mUncheckedView = createUncheckedView();
+        }
+        addView(mCheckedView, getDefaultLayoutParams());
+        addView(mUncheckedView, getDefaultLayoutParams());
+        setChecked(mChecked);
     }
 
     private LayoutParams getDefaultLayoutParams() {
@@ -146,37 +274,25 @@ public class RevealLayout extends FrameLayout {
         return false;
     }
 
+    /**
+     * 判断触摸位置是否在view内部，是否是合法点击
+     *
+     * @param x 触摸点x坐标
+     * @param y 触摸点y坐标
+     * @return 点击是否合法
+     */
     private boolean isValidClick(float x, float y) {
         return x >= 0 && x <= getWidth() && y >= 0 && y <= getHeight();
     }
 
-    public boolean isChecked() {
-        return mChecked;
-    }
-
-    public void setChecked(boolean checked) {
-        mChecked = checked;
-        if (mChecked) {
-            mCheckedView.bringToFront();
-        } else {
-            mUncheckedView.bringToFront();
-        }
-    }
-
-    public void toggle() {
-        mChecked = !mChecked;
-        if (mAnimator != null) {
-            mAnimator.reverse();
-        } else {
-            createRevealAnim();
-        }
-    }
-
+    /**
+     * 创建揭示动画
+     */
     private void createRevealAnim() {
         float[] value = calculateAnimOfFloat();
         mRevealRadius = value[0];
         mAnimator = ValueAnimator.ofFloat(value[0], value[1]);
-        mAnimator.setInterpolator(new DecelerateInterpolator());
+        mAnimator.setInterpolator(mInterpolator != null ? mInterpolator : new DecelerateInterpolator());
         mAnimator.setDuration(mAnimDuration);
         mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -191,17 +307,26 @@ public class RevealLayout extends FrameLayout {
             public void onAnimationStart(Animator animation) {
                 resetPath();
                 bringCurrentViewToFront();
+                if (mOnAnimStateChangeListener != null) {
+                    mOnAnimStateChangeListener.onStart();
+                }
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
                 mAnimator = null;
                 bringCurrentViewToFront();
+                if (mOnAnimStateChangeListener != null) {
+                    mOnAnimStateChangeListener.onEnd();
+                }
             }
 
             @Override
             public void onAnimationCancel(Animator animation) {
                 mAnimator = null;
+                if (mOnAnimStateChangeListener != null) {
+                    mOnAnimStateChangeListener.onCancel();
+                }
             }
 
             @Override
@@ -211,7 +336,12 @@ public class RevealLayout extends FrameLayout {
         mAnimator.start();
     }
 
-    private float[] calculateAnimOfFloat(){
+    /**
+     * 根据选中状态和揭示动画的扩散效果计算动画开始和结束半径
+     *
+     * @return {起始半径，结束半径}
+     */
+    private float[] calculateAnimOfFloat() {
         float fromValue;
         float toValue;
         float maxRadius = calculateMaxRadius();
@@ -240,6 +370,9 @@ public class RevealLayout extends FrameLayout {
         mPath.addCircle(mCenterX, mCenterY, mRevealRadius, Path.Direction.CW);
     }
 
+    /**
+     * 将当前状态的view显示在顶部
+     */
     private void bringCurrentViewToFront() {
         if (mRevealRadius == 0) {
             if (mChecked) {
@@ -250,6 +383,11 @@ public class RevealLayout extends FrameLayout {
         }
     }
 
+    /**
+     * 计算揭示效果做大圆形半径，及圆心到4个边角的最大距离
+     *
+     * @return 最大半径
+     */
     private float calculateMaxRadius() {
         float x = Math.max(mCenterX, getMeasuredWidth() - mCenterX);
         float y = Math.max(mCenterY, getMeasuredHeight() - mCenterY);
@@ -273,5 +411,37 @@ public class RevealLayout extends FrameLayout {
 
     private boolean isBottomChild(View child) {
         return getChildAt(0) == child;
+    }
+
+    public interface OnCheckedChangeListener {
+        /**
+         * 选中状态改变
+         *
+         * @param revealLayout RevealLayout
+         * @param isChecked    当前选中状态
+         */
+        void onCheckedChanged(RevealLayout revealLayout, boolean isChecked);
+    }
+
+    public interface OnAnimStateChangeListener {
+        /**
+         * 动画开始时调用
+         */
+        void onStart();
+
+        /**
+         * 动画回滚时调用。即上一个动画尚未结束时切换选中状态，动画回滚到之前状态
+         */
+        void onReverse();
+
+        /**
+         * 动画结束时调用
+         */
+        void onEnd();
+
+        /**
+         * 动画取消时调用
+         */
+        void onCancel();
     }
 }
