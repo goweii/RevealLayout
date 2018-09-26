@@ -55,7 +55,7 @@ public class RevealLayout extends FrameLayout {
         initView();
     }
 
-    private void initAttr(AttributeSet attrs) {
+    protected void initAttr(AttributeSet attrs) {
         TypedArray array = getContext().obtainStyledAttributes(attrs, R.styleable.RevealLayout);
         mCheckedLayoutId = array.getResourceId(R.styleable.RevealLayout_rl_checked_layout, 0);
         mUncheckedLayoutId = array.getResourceId(R.styleable.RevealLayout_rl_unchecked_layout, 0);
