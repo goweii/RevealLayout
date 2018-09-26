@@ -33,7 +33,7 @@ Step 2. Add the dependency
 
 ```java
 dependencies {
-	implementation 'com.github.goweii:RevealLayout:v1.0.1'
+	implementation 'com.github.goweii:RevealLayout:v1.1.0'
 }
 ```
 
