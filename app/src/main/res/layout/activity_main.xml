@@ -23,6 +23,7 @@
             android:text="支持过程中回滚"/>
 
         <per.goweii.reveallayout.RevealLayout
+            android:id="@+id/reveal_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
