@@ -31,9 +31,11 @@ allprojects {
 
 2. 在项目app目录的**build.gradle**添加依赖
 
+从1.1.1版本开始，版本号前不加v，引用时需要注意。
+
 ```java
 dependencies {
-	implementation 'com.github.goweii:RevealLayout:v1.1.0'
+	implementation 'com.github.goweii:RevealLayout:1.1.1'
 }
 ```
 
