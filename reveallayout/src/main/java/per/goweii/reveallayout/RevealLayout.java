@@ -394,7 +394,9 @@ public class RevealLayout extends FrameLayout {
      * 将当前状态的view显示在顶部
      */
     private void bringCurrentViewToFront() {
-        if (mRevealRadius == calculateMinRadius()) {
+        float minRadius = calculateMinRadius();
+        float maxRadius = calculateMaxRadius();
+        if (mRevealRadius < (minRadius + maxRadius) / 2) {
             if (mChecked) {
                 mCheckedView.bringToFront();
             } else {
