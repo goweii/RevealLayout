@@ -102,6 +102,22 @@ public class RevealLayout extends FrameLayout {
     }
 
     /**
+     * 设置选中状态
+     *
+     * @param checked 是否选中
+     * @param anim    动画
+     */
+    public void setChecked(boolean checked, boolean anim) {
+        if (mChecked != checked) {
+            if (anim) {
+                toggle();
+            } else {
+                setChecked(checked);
+            }
+        }
+    }
+
+    /**
      * 切换选中状态，带有动画效果
      */
     public void toggle() {
@@ -167,13 +183,13 @@ public class RevealLayout extends FrameLayout {
      */
     protected void initAttr(AttributeSet attrs) {
         TypedArray array = getContext().obtainStyledAttributes(attrs, R.styleable.RevealLayout);
-        mCheckedLayoutId = array.getResourceId(R.styleable.RevealLayout_rl_checked_layout, 0);
-        mUncheckedLayoutId = array.getResourceId(R.styleable.RevealLayout_rl_unchecked_layout, 0);
+        mCheckedLayoutId = array.getResourceId(R.styleable.RevealLayout_rl_checkedLayout, 0);
+        mUncheckedLayoutId = array.getResourceId(R.styleable.RevealLayout_rl_uncheckedLayout, 0);
         mChecked = array.getBoolean(R.styleable.RevealLayout_rl_checked, false);
-        mAnimDuration = array.getInteger(R.styleable.RevealLayout_rl_anim_duration, 500);
-        mCheckWithExpand = array.getBoolean(R.styleable.RevealLayout_rl_check_with_expand, true);
-        mUncheckWithExpand = array.getBoolean(R.styleable.RevealLayout_rl_uncheck_with_expand, false);
-        mAllowRevert = array.getBoolean(R.styleable.RevealLayout_rl_allow_revert, false);
+        mAnimDuration = array.getInteger(R.styleable.RevealLayout_rl_animDuration, 500);
+        mCheckWithExpand = array.getBoolean(R.styleable.RevealLayout_rl_checkWithExpand, true);
+        mUncheckWithExpand = array.getBoolean(R.styleable.RevealLayout_rl_uncheckWithExpand, false);
+        mAllowRevert = array.getBoolean(R.styleable.RevealLayout_rl_allowRevert, false);
         array.recycle();
     }
 
@@ -248,9 +264,9 @@ public class RevealLayout extends FrameLayout {
             case MotionEvent.ACTION_DOWN:
                 return isValidClick(event.getX(), event.getY());
             case MotionEvent.ACTION_UP:
-                float unX = event.getX();
-                float unY = event.getY();
-                if (isValidClick(unX, unY)) {
+                float upX = event.getX();
+                float upY = event.getY();
+                if (isValidClick(upX, upY)) {
                     if (mAnimator != null) {
                         if (mAllowRevert) {
                             toggle();
@@ -260,8 +276,8 @@ public class RevealLayout extends FrameLayout {
                         }
                     } else {
                         mRevealRadius = 0;
-                        mCenterX = unX;
-                        mCenterY = unY;
+                        mCenterX = upX;
+                        mCenterY = upY;
                         toggle();
                         return true;
                     }
@@ -282,7 +298,10 @@ public class RevealLayout extends FrameLayout {
      * @return 点击是否合法
      */
     private boolean isValidClick(float x, float y) {
-        return x >= 0 && x <= getWidth() && y >= 0 && y <= getHeight();
+        return x >= 0 &&
+                x <= getWidth()/* - getPaddingLeft() - getPaddingRight()*/ &&
+                y >= 0 &&
+                y <= getHeight()/* - getPaddingTop() - getPaddingBottom()*/;
     }
 
     /**
@@ -344,22 +363,23 @@ public class RevealLayout extends FrameLayout {
     private float[] calculateAnimOfFloat() {
         float fromValue;
         float toValue;
+        float minRadius = calculateMinRadius();
         float maxRadius = calculateMaxRadius();
         if (mChecked) {
             if (mCheckWithExpand) {
-                fromValue = 0;
+                fromValue = minRadius;
                 toValue = maxRadius;
             } else {
                 fromValue = maxRadius;
-                toValue = 0;
+                toValue = minRadius;
             }
         } else {
             if (mUncheckWithExpand) {
-                fromValue = 0;
+                fromValue = minRadius;
                 toValue = maxRadius;
             } else {
                 fromValue = maxRadius;
-                toValue = 0;
+                toValue = minRadius;
             }
         }
         return new float[]{fromValue, toValue};
@@ -374,7 +394,7 @@ public class RevealLayout extends FrameLayout {
      * 将当前状态的view显示在顶部
      */
     private void bringCurrentViewToFront() {
-        if (mRevealRadius == 0) {
+        if (mRevealRadius == calculateMinRadius()) {
             if (mChecked) {
                 mCheckedView.bringToFront();
             } else {
@@ -386,11 +406,38 @@ public class RevealLayout extends FrameLayout {
     /**
      * 计算揭示效果做大圆形半径，及圆心到4个边角的最大距离
      *
+     * @return 最小半径
+     */
+    private float calculateMinRadius() {
+        float w = getMeasuredWidth();
+        float h = getMeasuredHeight();
+        float l = getPaddingLeft();
+        float t = getPaddingTop();
+        float r = getPaddingRight();
+        float b = getPaddingBottom();
+        float x = Math.max(l - mCenterX, mCenterX - (w - r));
+        float y = Math.max(t - mCenterY, mCenterY - (h - b));
+        x = Math.max(x, 0);
+        y = Math.max(y, 0);
+        return (float) Math.hypot(x, y);
+    }
+
+    /**
+     * 计算揭示效果做大圆形半径，及圆心到4个边角的最大距离
+     *
      * @return 最大半径
      */
     private float calculateMaxRadius() {
-        float x = Math.max(mCenterX, getMeasuredWidth() - mCenterX);
-        float y = Math.max(mCenterY, getMeasuredHeight() - mCenterY);
+        float w = getMeasuredWidth();
+        float h = getMeasuredHeight();
+        float l = getPaddingLeft();
+        float t = getPaddingTop();
+        float r = getPaddingRight();
+        float b = getPaddingBottom();
+        float x = Math.max(mCenterX - l, w - r - mCenterX);
+        float y = Math.max(mCenterY - t, h - b - mCenterY);
+        x = Math.max(x, 0);
+        y = Math.max(y, 0);
         return (float) Math.hypot(x, y);
     }
 

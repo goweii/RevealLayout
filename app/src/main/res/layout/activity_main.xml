@@ -13,111 +13,119 @@
         android:layout_weight="1"
         android:gravity="center"
         android:orientation="vertical">
-        
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:textColor="#232323"
-            android:textSize="15sp"
             android:gravity="center"
-            android:text="支持过程中回滚"/>
+            android:text="支持过程中回滚"
+            android:textColor="#232323"
+            android:textSize="15sp" />
 
         <per.goweii.reveallayout.RevealLayout
             android:id="@+id/reveal_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="true"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="true"
+            android:padding="15dp"
+            app:rl_allowRevert="true"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="true"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_follow_checked"
-            app:rl_uncheck_with_expand="true"
-            app:rl_unchecked_layout="@layout/reveal_layout_follow_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_follow_checked"
+            app:rl_uncheckWithExpand="true"
+            app:rl_uncheckedLayout="@layout/reveal_layout_follow_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="true"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="true"
+            android:padding="15dp"
+            app:rl_allowRevert="true"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="true"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_follow_checked"
-            app:rl_uncheck_with_expand="false"
-            app:rl_unchecked_layout="@layout/reveal_layout_follow_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_follow_checked"
+            app:rl_uncheckWithExpand="false"
+            app:rl_uncheckedLayout="@layout/reveal_layout_follow_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="true"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="false"
+            android:padding="15dp"
+            app:rl_allowRevert="true"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="false"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_follow_checked"
-            app:rl_uncheck_with_expand="true"
-            app:rl_unchecked_layout="@layout/reveal_layout_follow_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_follow_checked"
+            app:rl_uncheckWithExpand="true"
+            app:rl_uncheckedLayout="@layout/reveal_layout_follow_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="true"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="false"
+            android:padding="15dp"
+            app:rl_allowRevert="true"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="false"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_follow_checked"
-            app:rl_uncheck_with_expand="false"
-            app:rl_unchecked_layout="@layout/reveal_layout_follow_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_follow_checked"
+            app:rl_uncheckWithExpand="false"
+            app:rl_uncheckedLayout="@layout/reveal_layout_follow_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="true"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="true"
+            android:padding="15dp"
+            app:rl_allowRevert="true"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="true"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_like_checked"
-            app:rl_uncheck_with_expand="true"
-            app:rl_unchecked_layout="@layout/reveal_layout_like_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_like_checked"
+            app:rl_uncheckWithExpand="true"
+            app:rl_uncheckedLayout="@layout/reveal_layout_like_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="true"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="true"
+            android:padding="15dp"
+            app:rl_allowRevert="true"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="true"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_like_checked"
-            app:rl_uncheck_with_expand="false"
-            app:rl_unchecked_layout="@layout/reveal_layout_like_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_like_checked"
+            app:rl_uncheckWithExpand="false"
+            app:rl_uncheckedLayout="@layout/reveal_layout_like_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="true"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="false"
+            android:padding="15dp"
+            app:rl_allowRevert="true"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="false"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_like_checked"
-            app:rl_uncheck_with_expand="true"
-            app:rl_unchecked_layout="@layout/reveal_layout_like_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_like_checked"
+            app:rl_uncheckWithExpand="true"
+            app:rl_uncheckedLayout="@layout/reveal_layout_like_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="true"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="false"
+            android:padding="15dp"
+            app:rl_allowRevert="true"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="false"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_like_checked"
-            app:rl_uncheck_with_expand="false"
-            app:rl_unchecked_layout="@layout/reveal_layout_like_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_like_checked"
+            app:rl_uncheckWithExpand="false"
+            app:rl_uncheckedLayout="@layout/reveal_layout_like_unchecked" />
 
     </LinearLayout>
 
@@ -131,106 +139,114 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:textColor="#232323"
-            android:textSize="15sp"
             android:gravity="center"
-            android:text="不支持过程中回滚"/>
+            android:text="不支持过程中回滚"
+            android:textColor="#232323"
+            android:textSize="15sp" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="false"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="true"
+            android:padding="15dp"
+            app:rl_allowRevert="false"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="true"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_follow_checked"
-            app:rl_uncheck_with_expand="true"
-            app:rl_unchecked_layout="@layout/reveal_layout_follow_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_follow_checked"
+            app:rl_uncheckWithExpand="true"
+            app:rl_uncheckedLayout="@layout/reveal_layout_follow_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="false"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="true"
+            android:padding="15dp"
+            app:rl_allowRevert="false"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="true"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_follow_checked"
-            app:rl_uncheck_with_expand="false"
-            app:rl_unchecked_layout="@layout/reveal_layout_follow_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_follow_checked"
+            app:rl_uncheckWithExpand="false"
+            app:rl_uncheckedLayout="@layout/reveal_layout_follow_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="false"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="false"
+            android:padding="15dp"
+            app:rl_allowRevert="false"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="false"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_follow_checked"
-            app:rl_uncheck_with_expand="true"
-            app:rl_unchecked_layout="@layout/reveal_layout_follow_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_follow_checked"
+            app:rl_uncheckWithExpand="true"
+            app:rl_uncheckedLayout="@layout/reveal_layout_follow_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="false"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="false"
+            android:padding="15dp"
+            app:rl_allowRevert="false"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="false"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_follow_checked"
-            app:rl_uncheck_with_expand="false"
-            app:rl_unchecked_layout="@layout/reveal_layout_follow_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_follow_checked"
+            app:rl_uncheckWithExpand="false"
+            app:rl_uncheckedLayout="@layout/reveal_layout_follow_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="false"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="true"
+            android:padding="15dp"
+            app:rl_allowRevert="false"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="true"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_like_checked"
-            app:rl_uncheck_with_expand="true"
-            app:rl_unchecked_layout="@layout/reveal_layout_like_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_like_checked"
+            app:rl_uncheckWithExpand="true"
+            app:rl_uncheckedLayout="@layout/reveal_layout_like_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="false"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="true"
+            android:padding="15dp"
+            app:rl_allowRevert="false"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="true"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_like_checked"
-            app:rl_uncheck_with_expand="false"
-            app:rl_unchecked_layout="@layout/reveal_layout_like_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_like_checked"
+            app:rl_uncheckWithExpand="false"
+            app:rl_uncheckedLayout="@layout/reveal_layout_like_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="false"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="false"
+            android:padding="15dp"
+            app:rl_allowRevert="false"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="false"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_like_checked"
-            app:rl_uncheck_with_expand="true"
-            app:rl_unchecked_layout="@layout/reveal_layout_like_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_like_checked"
+            app:rl_uncheckWithExpand="true"
+            app:rl_uncheckedLayout="@layout/reveal_layout_like_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            app:rl_allow_revert="false"
-            app:rl_anim_duration="1000"
-            app:rl_check_with_expand="false"
+            android:padding="15dp"
+            app:rl_allowRevert="false"
+            app:rl_animDuration="1000"
+            app:rl_checkWithExpand="false"
             app:rl_checked="false"
-            app:rl_checked_layout="@layout/reveal_layout_like_checked"
-            app:rl_uncheck_with_expand="false"
-            app:rl_unchecked_layout="@layout/reveal_layout_like_unchecked" />
+            app:rl_checkedLayout="@layout/reveal_layout_like_checked"
+            app:rl_uncheckWithExpand="false"
+            app:rl_uncheckedLayout="@layout/reveal_layout_like_unchecked" />
 
     </LinearLayout>
 
