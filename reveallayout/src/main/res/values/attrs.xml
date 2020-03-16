@@ -3,10 +3,11 @@
     <declare-styleable name="RevealLayout">
         <attr name="rl_checkedLayout" format="reference" />
         <attr name="rl_uncheckedLayout" format="reference" />
-        <attr name="rl_checked" format="boolean" />
-        <attr name="rl_animDuration" format="integer" />
-        <attr name="rl_checkWithExpand" format="boolean" />
-        <attr name="rl_uncheckWithExpand" format="boolean" />
-        <attr name="rl_allowRevert" format="boolean" />
+        <attr name="rl_checked" format="boolean|reference" />
+        <attr name="rl_animDuration" format="integer|reference" />
+        <attr name="rl_checkWithExpand" format="boolean|reference" />
+        <attr name="rl_uncheckWithExpand" format="boolean|reference" />
+        <attr name="rl_allowRevert" format="boolean|reference" />
+        <attr name="rl_hideBackView" format="boolean|reference" />
     </declare-styleable>
 </resources>

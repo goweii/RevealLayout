@@ -23,7 +23,6 @@
             android:textSize="15sp" />
 
         <per.goweii.reveallayout.RevealLayout
-            android:id="@+id/reveal_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
@@ -37,6 +36,7 @@
             app:rl_uncheckedLayout="@layout/reveal_layout_follow_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
+            android:id="@+id/reveal_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
@@ -158,6 +158,7 @@
             app:rl_uncheckedLayout="@layout/reveal_layout_follow_unchecked" />
 
         <per.goweii.reveallayout.RevealLayout
+            android:id="@+id/reveal_layout2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"

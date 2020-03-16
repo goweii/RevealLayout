@@ -9,11 +9,14 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.Checkable;
 import android.widget.FrameLayout;
 
 /**
@@ -23,22 +26,27 @@ import android.widget.FrameLayout;
  * @author Cuizhen
  * @date 2018/9/25
  */
-public class RevealLayout extends FrameLayout {
+public class RevealLayout extends FrameLayout
+        implements Checkable, ValueAnimator.AnimatorUpdateListener, Animator.AnimatorListener, GestureDetector.OnGestureListener {
+
+    private final GestureDetector mGestureDetector;
 
     private View mCheckedView;
     private View mUncheckedView;
 
-    private int mCheckedLayoutId;
-    private int mUncheckedLayoutId;
-    private boolean mChecked;
-    private long mAnimDuration;
-    private boolean mCheckWithExpand;
-    private boolean mUncheckWithExpand;
-    private boolean mAllowRevert;
+    private int mCheckedLayoutId = 0;
+    private int mUncheckedLayoutId = 0;
+    private int mAnimDuration = 500;
+    private boolean mCheckWithExpand = true;
+    private boolean mUncheckWithExpand = false;
+    private boolean mAllowRevert = false;
+    private boolean mHideBackView = true;
 
-    private float mCenterX;
-    private float mCenterY;
-    private float mRevealRadius = 0;
+    private boolean mChecked = false;
+
+    private float mCenterX = 0F;
+    private float mCenterY = 0F;
+    private float mRevealRadius = 0F;
     private final Path mPath = new Path();
     private ValueAnimator mAnimator;
     private TimeInterpolator mInterpolator = null;
@@ -56,8 +64,100 @@ public class RevealLayout extends FrameLayout {
 
     public RevealLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        mGestureDetector = new GestureDetector(context, this);
         initAttr(attrs);
         initView();
+    }
+
+    /**
+     * 获取布局文件携带的属性，子类复写该方法，获取子类定义的属性。
+     * 获取到子类属性后可以在{@link #createCheckedView()}和{@link #createUncheckedView()}中使用
+     *
+     * @param attrs AttributeSet
+     */
+    protected void initAttr(AttributeSet attrs) {
+        TypedArray array = getContext().obtainStyledAttributes(attrs, R.styleable.RevealLayout);
+        mCheckedLayoutId = array.getResourceId(R.styleable.RevealLayout_rl_checkedLayout, 0);
+        mUncheckedLayoutId = array.getResourceId(R.styleable.RevealLayout_rl_uncheckedLayout, 0);
+        mChecked = array.getBoolean(R.styleable.RevealLayout_rl_checked, mChecked);
+        mAnimDuration = array.getInteger(R.styleable.RevealLayout_rl_animDuration, mAnimDuration);
+        mCheckWithExpand = array.getBoolean(R.styleable.RevealLayout_rl_checkWithExpand, mCheckWithExpand);
+        mUncheckWithExpand = array.getBoolean(R.styleable.RevealLayout_rl_uncheckWithExpand, mUncheckWithExpand);
+        mAllowRevert = array.getBoolean(R.styleable.RevealLayout_rl_allowRevert, mAllowRevert);
+        mHideBackView = array.getBoolean(R.styleable.RevealLayout_rl_hideBackView, mHideBackView);
+        array.recycle();
+    }
+
+    /**
+     * 初始化选中和未选中状态的控件，并设置默认状态
+     */
+    private void initView() {
+        removeAllViews();
+        if (mCheckedView == null) {
+            mCheckedView = createCheckedView();
+        }
+        if (mUncheckedView == null) {
+            mUncheckedView = createUncheckedView();
+        }
+        addView(mCheckedView, getDefaultLayoutParams());
+        addView(mUncheckedView, getDefaultLayoutParams());
+        showTwoView();
+        bringFrontView();
+        hideBackView();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        if (changed) {
+            resetCenter();
+        }
+    }
+
+    private LayoutParams getDefaultLayoutParams() {
+        LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        params.gravity = Gravity.CENTER;
+        return params;
+    }
+
+    /**
+     * 创建选中状态的控件，子类可复写该方法，初始化自己的控件
+     *
+     * @return 选中状态的控件
+     */
+    protected View createCheckedView() {
+        View checkedView;
+        if (mCheckedLayoutId > 0) {
+            checkedView = inflate(getContext(), mCheckedLayoutId, null);
+        } else {
+            checkedView = new View(getContext());
+        }
+        return checkedView;
+    }
+
+    /**
+     * 创建非选中状态的控件，子类可复写该方法，初始化自己的控件
+     *
+     * @return 非选中状态的控件
+     */
+    protected View createUncheckedView() {
+        View uncheckedView;
+        if (mUncheckedLayoutId > 0) {
+            uncheckedView = inflate(getContext(), mUncheckedLayoutId, null);
+        } else {
+            uncheckedView = new View(getContext());
+        }
+        return uncheckedView;
+    }
+
+    @Override
+    public void setOnClickListener(OnClickListener onClickListener) {
+        super.setOnClickListener(onClickListener);
     }
 
     /**
@@ -83,63 +183,84 @@ public class RevealLayout extends FrameLayout {
      *
      * @return 是否选中
      */
+    @Override
     public boolean isChecked() {
         return mChecked;
-    }
-
-    /**
-     * 设置选中状态，一般在初始化时调用
-     *
-     * @param checked 是否选中
-     */
-    public void setChecked(boolean checked) {
-        mChecked = checked;
-        if (mChecked) {
-            mCheckedView.bringToFront();
-        } else {
-            mUncheckedView.bringToFront();
-        }
     }
 
     /**
      * 设置选中状态
      *
      * @param checked 是否选中
-     * @param anim    动画
      */
-    public void setChecked(boolean checked, boolean anim) {
-        if (mChecked != checked) {
-            if (anim) {
-                toggle();
+    @Override
+    public void setChecked(boolean checked) {
+        if (mChecked == checked) return;
+        mChecked = checked;
+        onCheckedChanged(mChecked);
+        if (mAnimDuration > 0) {
+            if (mAnimator != null) {
+                mAnimator.reverse();
+                onAnimationReverse();
             } else {
-                setChecked(checked);
+                mAnimator = createRevealAnim();
+                mAnimator.start();
             }
+        } else {
+            if (mAnimator != null) {
+                mAnimator.cancel();
+                mAnimator = null;
+            }
+            showTwoView();
+            bringFrontView();
+            hideBackView();
+            resetCenter();
         }
     }
 
     /**
      * 切换选中状态，带有动画效果
      */
+    @Override
     public void toggle() {
-        mChecked = !mChecked;
-        if (mOnCheckedChangeListener != null) {
-            mOnCheckedChangeListener.onCheckedChanged(this, mChecked);
-        }
-        if (mAnimator != null) {
-            mAnimator.reverse();
-            if (mOnAnimStateChangeListener != null) {
-                mOnAnimStateChangeListener.onReverse();
-            }
-        } else {
-            createRevealAnim();
-        }
+        setChecked(!mChecked);
+    }
+
+    public void resetCenter(){
+        float w = getMeasuredWidth();
+        float h = getMeasuredHeight();
+        float l = getPaddingLeft();
+        float t = getPaddingTop();
+        float r = getPaddingRight();
+        float b = getPaddingBottom();
+        mCenterX = l + ((w - l - r) / 2F);
+        mCenterY = t + ((h - t - b) / 2F);
+    }
+
+    public void setCenterPercent(float centerPercentX, float centerPercentY) {
+        float centerX = getWidth() * centerPercentX;
+        float centerY = getHeight() * centerPercentY;
+        setCenter(centerX, centerY);
+    }
+
+    public void setCenter(float centerX, float centerY) {
+        mCenterX = centerX;
+        mCenterY = centerY;
+    }
+
+    public float getCenterX() {
+        return mCenterX;
+    }
+
+    public float getCenterY() {
+        return mCenterY;
     }
 
     public void setAllowRevert(boolean allowRevert) {
         mAllowRevert = allowRevert;
     }
 
-    public void setAnimDuration(long animDuration) {
+    public void setAnimDuration(int animDuration) {
         mAnimDuration = animDuration;
     }
 
@@ -175,118 +296,54 @@ public class RevealLayout extends FrameLayout {
         setUncheckedView(createUncheckedView());
     }
 
-    /**
-     * 获取布局文件携带的属性，子类复写该方法，获取子类定义的属性。
-     * 获取到子类属性后可以在{@link #createCheckedView()}和{@link #createUncheckedView()}中使用
-     *
-     * @param attrs AttributeSet
-     */
-    protected void initAttr(AttributeSet attrs) {
-        TypedArray array = getContext().obtainStyledAttributes(attrs, R.styleable.RevealLayout);
-        mCheckedLayoutId = array.getResourceId(R.styleable.RevealLayout_rl_checkedLayout, 0);
-        mUncheckedLayoutId = array.getResourceId(R.styleable.RevealLayout_rl_uncheckedLayout, 0);
-        mChecked = array.getBoolean(R.styleable.RevealLayout_rl_checked, false);
-        mAnimDuration = array.getInteger(R.styleable.RevealLayout_rl_animDuration, 500);
-        mCheckWithExpand = array.getBoolean(R.styleable.RevealLayout_rl_checkWithExpand, true);
-        mUncheckWithExpand = array.getBoolean(R.styleable.RevealLayout_rl_uncheckWithExpand, false);
-        mAllowRevert = array.getBoolean(R.styleable.RevealLayout_rl_allowRevert, false);
-        array.recycle();
-    }
-
-    /**
-     * 创建选中状态的控件，子类可复写该方法，初始化自己的控件
-     *
-     * @return 选中状态的控件
-     */
-    protected View createCheckedView() {
-        View checkedView;
-        if (mCheckedLayoutId > 0) {
-            checkedView = inflate(getContext(), mCheckedLayoutId, null);
-        } else {
-            checkedView = new View(getContext());
-        }
-        return checkedView;
-    }
-
-    /**
-     * 创建非选中状态的控件，子类可复写该方法，初始化自己的控件
-     *
-     * @return 非选中状态的控件
-     */
-    protected View createUncheckedView() {
-        View uncheckedView;
-        if (mUncheckedLayoutId > 0) {
-            uncheckedView = inflate(getContext(), mUncheckedLayoutId, null);
-        } else {
-            uncheckedView = new View(getContext());
-        }
-        return uncheckedView;
-    }
-
-    /**
-     * 初始化选中和未选中状态的控件，并设置默认状态
-     */
-    private void initView() {
-        removeAllViews();
-        if (mCheckedView == null) {
-            mCheckedView = createCheckedView();
-        }
-        if (mUncheckedView == null) {
-            mUncheckedView = createUncheckedView();
-        }
-        addView(mCheckedView, getDefaultLayoutParams());
-        addView(mUncheckedView, getDefaultLayoutParams());
-        setChecked(mChecked);
-    }
-
-    private LayoutParams getDefaultLayoutParams() {
-        LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        params.gravity = Gravity.CENTER;
-        return params;
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_UP:
-                return true;
-            default:
-                break;
-        }
-        return false;
-    }
-
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                return isValidClick(event.getX(), event.getY());
-            case MotionEvent.ACTION_UP:
-                float upX = event.getX();
-                float upY = event.getY();
-                if (isValidClick(upX, upY)) {
-                    if (mAnimator != null) {
-                        if (mAllowRevert) {
-                            toggle();
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    } else {
-                        mRevealRadius = 0;
-                        mCenterX = upX;
-                        mCenterY = upY;
-                        toggle();
-                        return true;
-                    }
-                } else {
-                    return false;
-                }
-            default:
-                break;
+        return mGestureDetector.onTouchEvent(event);
+    }
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        return isValidClick(e.getX(), e.getY());
+    }
+
+    @Override
+    public void onShowPress(MotionEvent e) {
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+        float upX = e.getX();
+        float upY = e.getY();
+        if (mAnimator != null) {
+            if (mAllowRevert) {
+                toggle();
+                performClick();
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            mRevealRadius = 0;
+            mCenterX = upX;
+            mCenterY = upY;
+            toggle();
+            performClick();
+            return true;
         }
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+    }
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         return false;
     }
 
@@ -307,52 +364,62 @@ public class RevealLayout extends FrameLayout {
     /**
      * 创建揭示动画
      */
-    private void createRevealAnim() {
+    private ValueAnimator createRevealAnim() {
         float[] value = calculateAnimOfFloat();
         mRevealRadius = value[0];
-        mAnimator = ValueAnimator.ofFloat(value[0], value[1]);
-        mAnimator.setInterpolator(mInterpolator != null ? mInterpolator : new DecelerateInterpolator());
-        mAnimator.setDuration(mAnimDuration);
-        mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mRevealRadius = (float) animation.getAnimatedValue();
-                resetPath();
-                invalidate();
-            }
-        });
-        mAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                resetPath();
-                bringCurrentViewToFront();
-                if (mOnAnimStateChangeListener != null) {
-                    mOnAnimStateChangeListener.onStart();
-                }
-            }
+        ValueAnimator animator = ValueAnimator.ofFloat(value[0], value[1]);
+        animator.setInterpolator(mInterpolator != null ? mInterpolator : new DecelerateInterpolator());
+        animator.setDuration(mAnimDuration);
+        animator.addUpdateListener(this);
+        animator.addListener(this);
+        return animator;
+    }
 
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mAnimator = null;
-                bringCurrentViewToFront();
-                if (mOnAnimStateChangeListener != null) {
-                    mOnAnimStateChangeListener.onEnd();
-                }
-            }
+    private void onCheckedChanged(boolean checked) {
+        if (mOnCheckedChangeListener != null) {
+            mOnCheckedChangeListener.onCheckedChanged(this, checked);
+        }
+    }
 
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                mAnimator = null;
-                if (mOnAnimStateChangeListener != null) {
-                    mOnAnimStateChangeListener.onCancel();
-                }
-            }
+    @Override
+    public void onAnimationUpdate(ValueAnimator animation) {
+        mRevealRadius = (float) animation.getAnimatedValue();
+        resetPath();
+        invalidate();
+    }
 
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-            }
-        });
-        mAnimator.start();
+    @Override
+    public void onAnimationStart(Animator animation) {
+        resetPath();
+        bringCurrentViewToFront();
+        if (mOnAnimStateChangeListener != null) {
+            mOnAnimStateChangeListener.onStart();
+        }
+    }
+
+    public void onAnimationReverse() {
+        if (mOnAnimStateChangeListener != null) {
+            mOnAnimStateChangeListener.onReverse();
+        }
+    }
+
+    @Override
+    public void onAnimationEnd(Animator animation) {
+        mAnimator = null;
+        bringCurrentViewToFront();
+        hideBackView();
+        resetCenter();
+        if (mOnAnimStateChangeListener != null) {
+            mOnAnimStateChangeListener.onEnd();
+        }
+    }
+
+    @Override
+    public void onAnimationCancel(Animator animation) {
+    }
+
+    @Override
+    public void onAnimationRepeat(Animator animation) {
     }
 
     /**
@@ -394,14 +461,35 @@ public class RevealLayout extends FrameLayout {
      * 将当前状态的view显示在顶部
      */
     private void bringCurrentViewToFront() {
+        showTwoView();
         float minRadius = calculateMinRadius();
         float maxRadius = calculateMaxRadius();
-        if (mRevealRadius < (minRadius + maxRadius) / 2) {
-            if (mChecked) {
-                mCheckedView.bringToFront();
-            } else {
-                mUncheckedView.bringToFront();
-            }
+        if (mRevealRadius < (minRadius + maxRadius) / 2F) {
+            bringFrontView();
+        }
+    }
+
+    private void bringFrontView(){
+        if (mChecked) {
+            mCheckedView.bringToFront();
+        } else {
+            mUncheckedView.bringToFront();
+        }
+    }
+
+    private void showTwoView() {
+        mCheckedView.setVisibility(VISIBLE);
+        mUncheckedView.setVisibility(VISIBLE);
+    }
+
+    private void hideBackView() {
+        if (!mHideBackView) {
+            return;
+        }
+        if (mChecked) {
+            mUncheckedView.setVisibility(INVISIBLE);
+        } else {
+            mCheckedView.setVisibility(INVISIBLE);
         }
     }
 
@@ -487,10 +575,5 @@ public class RevealLayout extends FrameLayout {
          * 动画结束时调用
          */
         void onEnd();
-
-        /**
-         * 动画取消时调用
-         */
-        void onCancel();
     }
 }
