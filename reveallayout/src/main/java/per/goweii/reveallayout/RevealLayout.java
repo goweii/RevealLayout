@@ -98,8 +98,16 @@ public class RevealLayout extends FrameLayout
         if (mUncheckedView == null) {
             mUncheckedView = createUncheckedView();
         }
-        addView(mCheckedView, getDefaultLayoutParams());
-        addView(mUncheckedView, getDefaultLayoutParams());
+        ViewGroup.LayoutParams checkParams = mCheckedView.getLayoutParams();
+        if (checkParams == null) {
+            checkParams = getDefaultLayoutParams();
+        }
+        ViewGroup.LayoutParams uncheckParams = mCheckedView.getLayoutParams();
+        if (uncheckParams == null) {
+            uncheckParams = getDefaultLayoutParams();
+        }
+        addViewInLayout(mCheckedView, getChildCount(), checkParams);
+        addViewInLayout(mUncheckedView, getChildCount(), uncheckParams);
         showTwoView();
         bringFrontView();
         hideBackView();
@@ -116,6 +124,21 @@ public class RevealLayout extends FrameLayout
         if (changed) {
             resetCenter();
         }
+    }
+
+    @Override
+    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+        if (mAnimator == null) {
+            return super.drawChild(canvas, child, drawingTime);
+        }
+        if (isBackView(child)) {
+            return super.drawChild(canvas, child, drawingTime);
+        }
+        canvas.save();
+        canvas.clipPath(mPath);
+        boolean drawChild = super.drawChild(canvas, child, drawingTime);
+        canvas.restore();
+        return drawChild;
     }
 
     private LayoutParams getDefaultLayoutParams() {
@@ -152,147 +175,6 @@ public class RevealLayout extends FrameLayout
             uncheckedView = new View(getContext());
         }
         return uncheckedView;
-    }
-
-    @Override
-    public void setOnClickListener(OnClickListener onClickListener) {
-        super.setOnClickListener(onClickListener);
-    }
-
-    /**
-     * 设置选中状态改变的监听器
-     *
-     * @param onCheckedChangeListener OnCheckedChangeListener
-     */
-    public void setOnCheckedChangeListener(OnCheckedChangeListener onCheckedChangeListener) {
-        mOnCheckedChangeListener = onCheckedChangeListener;
-    }
-
-    /**
-     * 设置动画状态改变的监听器
-     *
-     * @param onAnimStateChangeListener OnAnimStateChangeListener
-     */
-    public void setOnAnimStateChangeListener(OnAnimStateChangeListener onAnimStateChangeListener) {
-        mOnAnimStateChangeListener = onAnimStateChangeListener;
-    }
-
-    /**
-     * 获取当前选中状态
-     *
-     * @return 是否选中
-     */
-    @Override
-    public boolean isChecked() {
-        return mChecked;
-    }
-
-    /**
-     * 设置选中状态
-     *
-     * @param checked 是否选中
-     */
-    @Override
-    public void setChecked(boolean checked) {
-        if (mChecked == checked) return;
-        mChecked = checked;
-        onCheckedChanged(mChecked);
-        if (mAnimDuration > 0) {
-            if (mAnimator != null) {
-                mAnimator.reverse();
-                onAnimationReverse();
-            } else {
-                mAnimator = createRevealAnim();
-                mAnimator.start();
-            }
-        } else {
-            if (mAnimator != null) {
-                mAnimator.cancel();
-                mAnimator = null;
-            }
-            showTwoView();
-            bringFrontView();
-            hideBackView();
-            resetCenter();
-        }
-    }
-
-    /**
-     * 切换选中状态，带有动画效果
-     */
-    @Override
-    public void toggle() {
-        setChecked(!mChecked);
-    }
-
-    public void resetCenter(){
-        float w = getMeasuredWidth();
-        float h = getMeasuredHeight();
-        float l = getPaddingLeft();
-        float t = getPaddingTop();
-        float r = getPaddingRight();
-        float b = getPaddingBottom();
-        mCenterX = l + ((w - l - r) / 2F);
-        mCenterY = t + ((h - t - b) / 2F);
-    }
-
-    public void setCenterPercent(float centerPercentX, float centerPercentY) {
-        float centerX = getWidth() * centerPercentX;
-        float centerY = getHeight() * centerPercentY;
-        setCenter(centerX, centerY);
-    }
-
-    public void setCenter(float centerX, float centerY) {
-        mCenterX = centerX;
-        mCenterY = centerY;
-    }
-
-    public float getCenterX() {
-        return mCenterX;
-    }
-
-    public float getCenterY() {
-        return mCenterY;
-    }
-
-    public void setAllowRevert(boolean allowRevert) {
-        mAllowRevert = allowRevert;
-    }
-
-    public void setAnimDuration(int animDuration) {
-        mAnimDuration = animDuration;
-    }
-
-    public void setInterpolator(TimeInterpolator interpolator) {
-        mInterpolator = interpolator;
-    }
-
-    public void setCheckWithExpand(boolean checkWithExpand) {
-        mCheckWithExpand = checkWithExpand;
-    }
-
-    public void setUncheckWithExpand(boolean uncheckWithExpand) {
-        mUncheckWithExpand = uncheckWithExpand;
-    }
-
-    public void setCheckedView(View checkedView) {
-        mCheckedView = checkedView;
-        initView();
-    }
-
-    public void setUncheckedView(View uncheckedView) {
-        mUncheckedView = uncheckedView;
-        initView();
-    }
-
-    public void setCheckedLayoutId(int checkedLayoutId) {
-        mCheckedLayoutId = checkedLayoutId;
-        setCheckedView(createCheckedView());
-    }
-
-    public void setUncheckedLayoutId(int uncheckedLayoutId) {
-        mUncheckedLayoutId = uncheckedLayoutId;
-        setUncheckedView(createUncheckedView());
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -530,23 +412,177 @@ public class RevealLayout extends FrameLayout
         return (float) Math.hypot(x, y);
     }
 
-    @Override
-    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-        if (mAnimator == null) {
-            return super.drawChild(canvas, child, drawingTime);
-        }
-        if (isBottomChild(child)) {
-            return super.drawChild(canvas, child, drawingTime);
-        }
-        canvas.save();
-        canvas.clipPath(mPath);
-        boolean drawChild = super.drawChild(canvas, child, drawingTime);
-        canvas.restore();
-        return drawChild;
+    private boolean isBackView(View child) {
+        return getChildAt(0) == child;
     }
 
-    private boolean isBottomChild(View child) {
-        return getChildAt(0) == child;
+    @Override
+    public void setOnClickListener(OnClickListener onClickListener) {
+        super.setOnClickListener(onClickListener);
+    }
+
+    /**
+     * 设置选中状态改变的监听器
+     *
+     * @param onCheckedChangeListener OnCheckedChangeListener
+     */
+    public void setOnCheckedChangeListener(OnCheckedChangeListener onCheckedChangeListener) {
+        mOnCheckedChangeListener = onCheckedChangeListener;
+    }
+
+    /**
+     * 设置动画状态改变的监听器
+     *
+     * @param onAnimStateChangeListener OnAnimStateChangeListener
+     */
+    public void setOnAnimStateChangeListener(OnAnimStateChangeListener onAnimStateChangeListener) {
+        mOnAnimStateChangeListener = onAnimStateChangeListener;
+    }
+
+    /**
+     * 获取当前选中状态
+     *
+     * @return 是否选中
+     */
+    @Override
+    public boolean isChecked() {
+        return mChecked;
+    }
+
+    /**
+     * 设置选中状态
+     *
+     * @param checked 是否选中
+     */
+    @Override
+    public void setChecked(boolean checked) {
+        if (mChecked == checked) return;
+        mChecked = checked;
+        onCheckedChanged(mChecked);
+        if (mAnimDuration > 0) {
+            if (mAnimator != null) {
+                mAnimator.reverse();
+                onAnimationReverse();
+            } else {
+                mAnimator = createRevealAnim();
+                mAnimator.start();
+            }
+        } else {
+            if (mAnimator != null) {
+                mAnimator.cancel();
+                mAnimator = null;
+            }
+            showTwoView();
+            bringFrontView();
+            hideBackView();
+            resetCenter();
+        }
+    }
+
+    /**
+     * 切换选中状态，带有动画效果
+     */
+    @Override
+    public void toggle() {
+        setChecked(!mChecked);
+    }
+
+    public void resetCenter(){
+        float w = getMeasuredWidth();
+        float h = getMeasuredHeight();
+        float l = getPaddingLeft();
+        float t = getPaddingTop();
+        float r = getPaddingRight();
+        float b = getPaddingBottom();
+        mCenterX = l + ((w - l - r) / 2F);
+        mCenterY = t + ((h - t - b) / 2F);
+    }
+
+    public void setCenterPercent(float centerPercentX, float centerPercentY) {
+        float centerX = getWidth() * centerPercentX;
+        float centerY = getHeight() * centerPercentY;
+        setCenter(centerX, centerY);
+    }
+
+    public void setCenter(float centerX, float centerY) {
+        mCenterX = centerX;
+        mCenterY = centerY;
+    }
+
+    public float getCenterX() {
+        return mCenterX;
+    }
+
+    public float getCenterY() {
+        return mCenterY;
+    }
+
+    public void setAllowRevert(boolean allowRevert) {
+        mAllowRevert = allowRevert;
+    }
+
+    public void setAnimDuration(int animDuration) {
+        mAnimDuration = animDuration;
+    }
+
+    public void setInterpolator(TimeInterpolator interpolator) {
+        mInterpolator = interpolator;
+    }
+
+    public void setCheckWithExpand(boolean checkWithExpand) {
+        mCheckWithExpand = checkWithExpand;
+    }
+
+    public void setUncheckWithExpand(boolean uncheckWithExpand) {
+        mUncheckWithExpand = uncheckWithExpand;
+    }
+
+    public void setCheckedView(View checkedView) {
+        if (checkedView == null) {
+            return;
+        }
+        if (mCheckedView == checkedView) {
+            return;
+        }
+        removeViewInLayout(mCheckedView);
+        mCheckedView = checkedView;
+        ViewGroup.LayoutParams checkParams = mCheckedView.getLayoutParams();
+        if (checkParams == null) {
+            checkParams = getDefaultLayoutParams();
+        }
+        addViewInLayout(mCheckedView, getChildCount(), checkParams);
+        showTwoView();
+        bringFrontView();
+        hideBackView();
+    }
+
+    public void setUncheckedView(View uncheckedView) {
+        if (mUncheckedView == null) {
+            return;
+        }
+        if (mUncheckedView == uncheckedView) {
+            return;
+        }
+        removeViewInLayout(mUncheckedView);
+        mUncheckedView = uncheckedView;
+        ViewGroup.LayoutParams uncheckParams = mUncheckedView.getLayoutParams();
+        if (uncheckParams == null) {
+            uncheckParams = getDefaultLayoutParams();
+        }
+        addViewInLayout(mUncheckedView, getChildCount(), uncheckParams);
+        showTwoView();
+        bringFrontView();
+        hideBackView();
+    }
+
+    public void setCheckedLayoutId(int checkedLayoutId) {
+        mCheckedLayoutId = checkedLayoutId;
+        setCheckedView(createCheckedView());
+    }
+
+    public void setUncheckedLayoutId(int uncheckedLayoutId) {
+        mUncheckedLayoutId = uncheckedLayoutId;
+        setUncheckedView(createUncheckedView());
     }
 
     public interface OnCheckedChangeListener {
