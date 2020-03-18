@@ -194,10 +194,14 @@ public class RevealLayout extends FrameLayout
      */
     @Override
     public void setChecked(boolean checked) {
+        setChecked(checked, true);
+    }
+
+    public void setChecked(boolean checked, boolean withAnim) {
         if (mChecked == checked) return;
         mChecked = checked;
         onCheckedChanged(mChecked);
-        if (mAnimDuration > 0) {
+        if (withAnim && mAnimDuration > 0) {
             if (mAnimator != null) {
                 mAnimator.reverse();
                 onAnimationReverse();
