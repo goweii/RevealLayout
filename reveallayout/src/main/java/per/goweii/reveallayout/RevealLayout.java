@@ -350,7 +350,7 @@ public class RevealLayout extends FrameLayout
         }
     }
 
-    private void bringFrontView(){
+    private void bringFrontView() {
         if (mChecked) {
             mCheckedView.bringToFront();
         } else {
@@ -480,6 +480,36 @@ public class RevealLayout extends FrameLayout
     }
 
     /**
+     * 设置选中状态
+     *
+     * @param checked  是否选中
+     * @param withAnim 是否有动画
+     */
+    public void setChecked(boolean checked, boolean withAnim) {
+        if (mChecked == checked) return;
+        mChecked = checked;
+        onCheckedChanged(mChecked);
+        if (withAnim && mAnimDuration > 0) {
+            if (mAnimator != null) {
+                mAnimator.reverse();
+                onAnimationReverse();
+            } else {
+                mAnimator = createRevealAnim();
+                mAnimator.start();
+            }
+        } else {
+            if (mAnimator != null) {
+                mAnimator.cancel();
+                mAnimator = null;
+            }
+            showTwoView();
+            bringFrontView();
+            hideBackView();
+            resetCenter();
+        }
+    }
+
+    /**
      * 切换选中状态，带有动画效果
      */
     @Override
@@ -487,7 +517,7 @@ public class RevealLayout extends FrameLayout
         setChecked(!mChecked);
     }
 
-    public void resetCenter(){
+    public void resetCenter() {
         float w = getMeasuredWidth();
         float h = getMeasuredHeight();
         float l = getPaddingLeft();
