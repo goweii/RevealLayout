@@ -11,6 +11,7 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,7 +91,7 @@ public class RevealLayout extends FrameLayout
     /**
      * 初始化选中和未选中状态的控件，并设置默认状态
      */
-    private void initView() {
+    protected void initView() {
         removeAllViews();
         if (mCheckedView == null) {
             mCheckedView = createCheckedView();
@@ -102,7 +103,7 @@ public class RevealLayout extends FrameLayout
         if (checkParams == null) {
             checkParams = getDefaultLayoutParams();
         }
-        ViewGroup.LayoutParams uncheckParams = mCheckedView.getLayoutParams();
+        ViewGroup.LayoutParams uncheckParams = mUncheckedView.getLayoutParams();
         if (uncheckParams == null) {
             uncheckParams = getDefaultLayoutParams();
         }
@@ -154,12 +155,16 @@ public class RevealLayout extends FrameLayout
      */
     protected View createCheckedView() {
         View checkedView;
-        if (mCheckedLayoutId > 0) {
-            checkedView = inflate(getContext(), mCheckedLayoutId, null);
+        if (getCheckedLayoutId() > 0) {
+            checkedView = LayoutInflater.from(getContext()).inflate(getCheckedLayoutId(), this, false);
         } else {
             checkedView = new View(getContext());
         }
         return checkedView;
+    }
+
+    protected int getCheckedLayoutId(){
+        return mCheckedLayoutId;
     }
 
     /**
@@ -169,12 +174,16 @@ public class RevealLayout extends FrameLayout
      */
     protected View createUncheckedView() {
         View uncheckedView;
-        if (mUncheckedLayoutId > 0) {
-            uncheckedView = inflate(getContext(), mUncheckedLayoutId, null);
+        if (getUncheckedLayoutId() > 0) {
+            uncheckedView = LayoutInflater.from(getContext()).inflate(getUncheckedLayoutId(), this, false);
         } else {
             uncheckedView = new View(getContext());
         }
         return uncheckedView;
+    }
+
+    protected int getUncheckedLayoutId() {
+        return mUncheckedLayoutId;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -580,14 +589,14 @@ public class RevealLayout extends FrameLayout
         if (checkParams == null) {
             checkParams = getDefaultLayoutParams();
         }
-        addView(mCheckedView, getChildCount(), checkParams);
+        addViewInLayout(mCheckedView, getChildCount(), checkParams);
         showTwoView();
         bringFrontView();
         hideBackView();
     }
 
     public void setUncheckedView(View uncheckedView) {
-        if (mUncheckedView == null) {
+        if (uncheckedView == null) {
             return;
         }
         if (mUncheckedView == uncheckedView) {
@@ -599,7 +608,7 @@ public class RevealLayout extends FrameLayout
         if (uncheckParams == null) {
             uncheckParams = getDefaultLayoutParams();
         }
-        addView(mUncheckedView, getChildCount(), uncheckParams);
+        addViewInLayout(mUncheckedView, getChildCount(), uncheckParams);
         showTwoView();
         bringFrontView();
         hideBackView();
