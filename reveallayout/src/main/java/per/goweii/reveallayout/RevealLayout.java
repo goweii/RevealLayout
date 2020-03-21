@@ -580,7 +580,7 @@ public class RevealLayout extends FrameLayout
         if (checkParams == null) {
             checkParams = getDefaultLayoutParams();
         }
-        addViewInLayout(mCheckedView, getChildCount(), checkParams);
+        addView(mCheckedView, getChildCount(), checkParams);
         showTwoView();
         bringFrontView();
         hideBackView();
@@ -599,7 +599,7 @@ public class RevealLayout extends FrameLayout
         if (uncheckParams == null) {
             uncheckParams = getDefaultLayoutParams();
         }
-        addViewInLayout(mUncheckedView, getChildCount(), uncheckParams);
+        addView(mUncheckedView, getChildCount(), uncheckParams);
         showTwoView();
         bringFrontView();
         hideBackView();
