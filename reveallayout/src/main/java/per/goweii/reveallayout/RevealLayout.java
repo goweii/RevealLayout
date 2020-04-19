@@ -207,7 +207,6 @@ public class RevealLayout extends FrameLayout
         float upY = e.getY();
         if (mAnimator != null) {
             if (mAllowRevert) {
-                toggle();
                 performClick();
                 return true;
             } else {
@@ -217,7 +216,6 @@ public class RevealLayout extends FrameLayout
             mRevealRadius = 0;
             mCenterX = upX;
             mCenterY = upY;
-            toggle();
             performClick();
             return true;
         }
@@ -235,6 +233,12 @@ public class RevealLayout extends FrameLayout
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         return false;
+    }
+
+    @Override
+    public boolean performClick() {
+        toggle();
+        return super.performClick();
     }
 
     /**
